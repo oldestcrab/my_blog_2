@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ blog.title }}</title>
+</head>
+<body>
+<a href="{% url 'home'%}"><h3>首页</h3></a>
+<h3>{{ blog.title }}</h3>
+<p>博客分类:
+<a href="{% url 'blog:blog_with_type' blog.blog_type.id %}">{{ blog.blog_type }}</a>
+</p>
+<p>{{ blog.content }}</p>
+</body>
+</html>
