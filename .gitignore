@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+
+# vscode 配置
+.vscode
+
+# pycharm 配置
+.idea
+
+# settings 配置
+/.env
+
+#django 数据库迁移文件
+**/migrations/*
+!**/migrations/__init__.py
+
+# 忽略日志文件
+*.log

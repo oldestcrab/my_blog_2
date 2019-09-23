@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '*w4419%=i2)$ddt+agu2&(p3zz+2*_+^(8p6w4cw-bj-=%x^9j'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 
 # Application definition
@@ -37,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'blog',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'my_blog.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,8 +78,12 @@ WSGI_APPLICATION = 'my_blog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': config('MYSQL_HOST'),
+        'PORT': config('MYSQL_PORT'),
+        'USER': config('MYSQL_USER'),
+        'PASSWORD': config('MYSQL_PASSWORD'),
+        'NAME': config('MYSQL_DATABASE'),
     }
 }
 
@@ -103,9 +110,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-Hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -118,3 +125,73 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# 日志模块logging的配置
+LOGGING = {
+    'version': 1,  # 指明dictConfig的版本
+    'disable_existing_loggers': False,  # 表示是否禁用所有的已经存在的日志配置
+    # 根日志默认日志级别
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'log_file'],
+    },
+    # 格式化器, 指明了最终输出中日志记录的布局
+    'formatters': {
+        'verbose': {
+            # [时间] 日志级别 [日志对象名称.日志记录所在的函数名.日志记录所在的行号.文件名部分名称] [具体的日志信息]
+            'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d %(module)s] %(message)s',
+        }
+    },
+    # 过滤器, 提供了更好的粒度控制,它可以决定输出哪些日志记录。
+    'filters': {
+        # 判断settings的DEBUG是否开启
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    # 处理器,用来定义具体处理日志的方式，可以定义多种，"default"就是默认方式，"console"就是打印到控制台方式。file是写入到文件的方式，注意使用的class不同
+    'handlers': {
+        'log_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 与default相同
+            'filename': 'my_blog.log',  # 日志输出文件
+            'maxBytes': 16777216,  # 16MB
+            'formatter': 'verbose'  # 制定输出的格式，注意 在上面的formatter配置里面选择一个，否则会报错
+        },
+        'console': {
+            'level': 'DEBUG',
+            # settings的DEBUG开启时才放行
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        # 将 DEBUG 以上的日志写到 /dev/null 黑洞
+        'null': {
+            'class': 'logging.NullHandler',
+        },
+        # settings的DEBUG为false时，将所有 ERROR 以上的日志邮件发送给站点管理员，当
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+        }
+    },
+    'loggers': {
+        # 将所有 INFO 以上的日志，发送类 console 和 mail_admins 处理其，也就是说 INFO 以上的会打印到控制台，并输入到日志文件
+        'my_blog': {
+            'handlers': ['log_file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # 将所有 ERROR 以上的日志写到 mail_admins 处理器，而且不再冒泡，也就是说 django 这个 logger 不会接到 django.request 产生的日志信息
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    }
+}
