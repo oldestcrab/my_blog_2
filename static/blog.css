@@ -2,6 +2,7 @@ ul.blog-types {
     list-style-type: none;
 }
 
+/* 博客列表每列样式 */
 div.blog:not(:last-child){
     margin-bottom: 2em;
     padding-bottom: 1em;
@@ -12,6 +13,7 @@ div.blog.h3 {
     margin-top: 0.5em;
 }
 
+/* 博客信息描述 */
 ul.blog-info-description {
     list-style-type: none;
     margin-bottom: 1em;
@@ -22,6 +24,12 @@ ul.blog-info-description li {
     margin-right: 2em;
 }
 
+/* 博客内容 */
 div.blog-content {
     text-indent: 2em;
+}
+
+/* 分页 */
+div.paginator {
+    text-align: center;
 }

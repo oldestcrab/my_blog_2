@@ -195,3 +195,6 @@ LOGGING = {
         },
     }
 }
+
+# 博客分页数量
+EACH_PAGE_BLOGS_NUMBER = 7

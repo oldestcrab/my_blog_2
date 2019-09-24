@@ -26,3 +26,4 @@ class Blog(models.Model):
     class Meta:
         verbose_name = '博客'
         verbose_name_plural = verbose_name
+        ordering = ['-created_time']
