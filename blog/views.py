@@ -87,10 +87,20 @@ def blog_detail(request, blog_id):
     :return:
     """
     # 通过id获取博客对象
+    print(blog_id)
     blog = get_object_or_404(Blog, id=blog_id)
+
+    # 上一条博客
+    previous_blog = Blog.objects.filter(created_time__lt=blog.created_time).first()
+    # 下一条博客
+    next_blog = Blog.objects.filter(created_time__gt=blog.created_time).last()
+    print('p',previous_blog.id)
+    print('n',next_blog.id)
 
     context = {
         'blog': blog,
+        'previous_blog': previous_blog,
+        'next_blog': next_blog,
     }
 
     return render(request, 'blog/blog_detail.html', context=context)
