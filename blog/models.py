@@ -21,7 +21,7 @@ class Blog(models.Model):
     is_delete = models.BooleanField(default=False)
 
     def __str__(self):
-        return '博客:'.format(self.title)
+        return '博客:{}'.format(self.title)
 
     class Meta:
         verbose_name = '博客'
