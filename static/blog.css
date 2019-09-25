@@ -33,3 +33,8 @@ div.blog-content {
 div.paginator {
     text-align: center;
 }
+
+/* 上下篇博客 */
+div.blog-more {
+    margin-top: 1em;
+}
