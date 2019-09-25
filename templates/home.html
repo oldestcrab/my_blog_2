@@ -1,10 +1,39 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
+
 {% block title %}
 OldestCrab Blog
 {% endblock title %}
+{% block header_extends %}
+<link rel="stylesheet" href="{% static 'home.css' %}">
+<script src="http://cdn.highcharts.com.cn/highcharts/highcharts.js"></script>
+{% endblock header_extends %}
 {% block nav_home_active %}
 active
 {% endblock nav_home_active %}
 {% block content %}
-<h3>你好呀</h3>
+<h3 class="home-content">你好呀</h3>
+<div id="container"></div>
+<script>
+    var options = {
+        chart: { type: 'line'},
+        title: { text: null },
+        xAxis: {
+            categories: {{ days|safe }},
+            tickmarkPlacement: 'on',
+        },
+        yAxis:{
+            title: { text: null },
+            labels: { enabled: false },
+            gridLineDashSytle: 'Dash',
+        },
+        series: [{
+            name:'阅读量',
+            data: {{ read_nums }}
+        }],
+        legend: { enabled:false},
+        credits: {enabled:false},
+    };
+    var char = Highcharts.chart('container', options);
+</script>
 {% endblock content %}

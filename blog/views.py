@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models import Count
+from read_statistics.utils import read_statistics_once_read
 
 
 def get_blog_list_common_date(request, object_list):
@@ -98,7 +99,7 @@ def blogs_with_date(request, year, month):
 
     context['blogs_with_date'] = blogs_with_date
     context['current_date'] = str(year) + '-' + str(month)
-
+    # TODO:日期归档不显示数量
     return render(request, 'blog/blog_with_type.html', context=context)
 
 def blog_detail(request, blog_id):
@@ -110,10 +111,9 @@ def blog_detail(request, blog_id):
     """
     # 通过id获取博客对象
     blog = get_object_or_404(Blog, id=blog_id)
-    if not request.COOKIES.get(f'blog_{blog_id}_read'):
-        blog.read_num += 1
-        # TODO:会自动修改博客更新时间，需要修复
-        blog.save()
+
+    # 返回设置的cookies key
+    key = read_statistics_once_read(request, blog)
 
     # 上一条博客
     previous_blog = Blog.objects.filter(created_time__lt=blog.created_time).first()
@@ -128,6 +128,6 @@ def blog_detail(request, blog_id):
     }
 
     response = render(request, 'blog/blog_detail.html', context=context)
-    response.set_cookie(f'blog_{blog_id}_read', 'true')
+    response.set_cookie(key, 'true')
 
     return response
