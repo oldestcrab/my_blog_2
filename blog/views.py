@@ -2,8 +2,8 @@ from django.shortcuts import render
 from .models import Blog, BlogType
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-
 from django.conf import settings
+from django.db.models import Count
 
 
 def get_blog_list_common_date(request, object_list):
@@ -35,17 +35,20 @@ def get_blog_list_common_date(request, object_list):
         page_range.append('...')
         page_range.append(paginator.num_pages)
 
-    # 所有博客分类
-    blog_types = BlogType.objects.all()
+    # 按月分类, 以及数量统计
+    blog_dates_dict = {}
+    for blog in Blog.objects.dates('created_time', 'month', 'DESC'):
+        blog_count = Blog.objects.filter(created_time__year=blog.year, created_time__month=blog.month).count()
+        blog_dates_dict[blog] = blog_count
 
-    # 按月分类
-    blog_dates = Blog.objects.dates('created_time', 'month', 'DESC')
+    # 所有博客分类, 以及数量统计
+    blog_types_count = BlogType.objects.annotate(blog_count=Count('blog'))
 
     context = {
-        'blog_types': blog_types,
+        'blog_types': blog_types_count,
         'page_range': page_range,
         'current_page': current_page,
-        'blog_dates': blog_dates,
+        'blog_dates_dict': blog_dates_dict,
     }
 
     return context
@@ -80,6 +83,13 @@ def blogs_with_type(request, blog_with_type_id):
     return render(request, 'blog/blog_with_type.html', context=context)
 
 def blogs_with_date(request, year, month):
+    """展示通过日期(月份)分类的博客列表
+
+    :param request: request
+    :param year: 年份
+    :param month: 月份
+    :return:
+    """
 
     # 当前日期的所有博客
     blogs_with_date = Blog.objects.filter(created_time__year=year, created_time__month=month)
