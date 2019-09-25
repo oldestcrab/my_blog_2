@@ -17,7 +17,7 @@ active
             <h3>{{ blog.title }}</h3>
             <ul class="blog-info-description">
                 <li>作者：{{ blog.author}}</li>
-                <li>分类：<a href="{% url 'blog:blog_with_type' blog.blog_type.id %}">{{ blog.blog_type }}</a></li>
+                <li>分类：<a href="{% url 'blog:blogs_with_type' blog.blog_type.id %}">{{ blog.blog_type }}</a></li>
                 <li>发表日期：{{ blog.created_time|date:'Y-m-d H:n:s'}}</li>
             </ul>
             <div class="blog-content">{{ blog.content }}</div>

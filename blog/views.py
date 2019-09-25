@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.conf import settings
 
 
-def get_blog_common_date(request, object_list):
+def get_blog_list_common_date(request, object_list):
     """返回博客的一些通用信息
 
     :param request: request
@@ -38,10 +38,14 @@ def get_blog_common_date(request, object_list):
     # 所有博客分类
     blog_types = BlogType.objects.all()
 
+    # 按月分类
+    blog_dates = Blog.objects.dates('created_time', 'month', 'DESC')
+
     context = {
         'blog_types': blog_types,
         'page_range': page_range,
         'current_page': current_page,
+        'blog_dates': blog_dates,
     }
 
     return context
@@ -54,10 +58,10 @@ def blog_list(request):
     """
     # 获取所有博客
     blogs = Blog.objects.all()
-    context = get_blog_common_date(request, blogs)
+    context = get_blog_list_common_date(request, blogs)
     return render(request, 'blog/blog_list.html', context=context)
 
-def blog_with_type(request, blog_with_type_id):
+def blogs_with_type(request, blog_with_type_id):
     """展示通过博客标签分类的博客列表
 
     :param request: request
@@ -69,13 +73,21 @@ def blog_with_type(request, blog_with_type_id):
     # 当前博客分类的所有博客
     blogs_with_type = Blog.objects.filter(blog_type=blog_type)
 
-    context = get_blog_common_date(request, blogs_with_type)
+    context = get_blog_list_common_date(request, blogs_with_type)
 
-    # 所有博客分类
-    blog_types = BlogType.objects.all()
-
-    context['blog_types'] = blog_types
     context['blog_type'] = blog_type
+
+    return render(request, 'blog/blog_with_type.html', context=context)
+
+def blogs_with_date(request, year, month):
+
+    # 当前日期的所有博客
+    blogs_with_date = Blog.objects.filter(created_time__year=year, created_time__month=month)
+
+    context = get_blog_list_common_date(request, blogs_with_date)
+
+    context['blogs_with_date'] = blogs_with_date
+    context['current_date'] = str(year) + '-' + str(month)
 
     return render(request, 'blog/blog_with_type.html', context=context)
 
@@ -87,15 +99,13 @@ def blog_detail(request, blog_id):
     :return:
     """
     # 通过id获取博客对象
-    print(blog_id)
     blog = get_object_or_404(Blog, id=blog_id)
 
     # 上一条博客
     previous_blog = Blog.objects.filter(created_time__lt=blog.created_time).first()
+
     # 下一条博客
     next_blog = Blog.objects.filter(created_time__gt=blog.created_time).last()
-    print('p',previous_blog.id)
-    print('n',next_blog.id)
 
     context = {
         'blog': blog,
