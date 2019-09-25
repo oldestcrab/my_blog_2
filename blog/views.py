@@ -110,6 +110,10 @@ def blog_detail(request, blog_id):
     """
     # 通过id获取博客对象
     blog = get_object_or_404(Blog, id=blog_id)
+    if not request.COOKIES.get(f'blog_{blog_id}_read'):
+        blog.read_num += 1
+        # TODO:会自动修改博客更新时间，需要修复
+        blog.save()
 
     # 上一条博客
     previous_blog = Blog.objects.filter(created_time__lt=blog.created_time).first()
@@ -123,4 +127,7 @@ def blog_detail(request, blog_id):
         'next_blog': next_blog,
     }
 
-    return render(request, 'blog/blog_detail.html', context=context)
+    response = render(request, 'blog/blog_detail.html', context=context)
+    response.set_cookie(f'blog_{blog_id}_read', 'true')
+
+    return response
