@@ -24,8 +24,11 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('ckeditor', include('ckeditor_uploader.urls')),
-    path('blog/', include('blog.urls', 'blog')),
-    path('login', views.login, name='login')
+    path('blog/', include(('blog.urls', 'blog'))),
+    path('comment/', include(('comment.urls', 'comment'))),
+    path('login', views.login, name='login'),
+    path('register', views.register, name='register'),
+
 ]
 
 # 设置上传的图片路径
