@@ -28,16 +28,17 @@ def home(request):
     # 昨天热门博客
     range_day_hot_blogs_1 = get_range_day_hot_blogs(1)
 
-    # 使用缓存
+    # 使用缓存，过去一周热门博客
     range_day_hot_blogs_7 = cache.get('range_day_hot_blogs_7')
     if not range_day_hot_blogs_7:
         range_day_hot_blogs_7 = get_range_day_hot_blogs(7)
         cache.set('range_day_hot_blogs_7', range_day_hot_blogs_7, 3600)
 
-    # 过去一周热门博客
-    # range_day_hot_blogs_7 = get_range_day_hot_blogs(7)
-    # 过去一个月热门博客
-    range_day_hot_blogs_30 = get_range_day_hot_blogs(30)
+    # 使用缓存，过去一个月热门博客
+    range_day_hot_blogs_30 = cache.get('range_day_hot_blogs_30')
+    if not range_day_hot_blogs_30:
+        range_day_hot_blogs_30 = get_range_day_hot_blogs(30)
+        cache.set('range_day_hot_blogs_30', range_day_hot_blogs_30, 3600)
 
     context = {
         'read_nums': read_nums,
