@@ -1,3 +1,11 @@
+<!--
+ * @Description: 首页
+ * @Author: oldestcrab
+ * @Github:
+ * @Date: 2019-09-24 15:25:46
+ * @LastEditors: oldestcrab
+ * @LastEditTime: 2019-09-26 11:24:32
+ -->
 {% extends 'base.html' %}
 {% load staticfiles %}
 
@@ -13,26 +21,84 @@ active
 {% endblock nav_home_active %}
 {% block content %}
 <h3 class="home-content">你好呀</h3>
+<!-- 图标容器 DOM -->
 <div id="container"></div>
+
+<div class="hot-data">
+    <h3>今日热门博客</h3>
+    <ul>
+        {% for blog in range_day_hot_blogs_0 %}
+        <li><a href="{% url 'blog:blog_detail' blog.id %}">{{ blog.title }}({{  blog.read_num_detail }})</a></li>
+        {% empty %}
+        <li>暂无热门博客</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="hot-data">
+    <h3>昨日热门博客</h3>
+    <ul>
+        {% for blog in range_day_hot_blogs_1 %}
+        <li><a href="{% url 'blog:blog_detail' blog.id %}">{{ blog.title }}({{  blog.read_num_detail }})</a></li>
+        {% empty %}
+        <li>暂无热门博客</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="hot-data">
+    <h3>一周内热门博客</h3>
+    <ul>
+        {% for blog in range_day_hot_blogs_7 %}
+        <li><a href="{% url 'blog:blog_detail' blog.id %}">{{ blog.title }}({{  blog.read_num_detail }})</a></li>
+        {% empty %}
+        <li>暂无热门博客</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="hot-data">
+    <h3>一月内热门博客</h3>
+    <ul>
+        {% for blog in range_day_hot_blogs_7 %}
+        <li><a href="{% url 'blog:blog_detail' blog.id %}">{{ blog.title }}({{  blog.read_num_detail }})</a></li>
+        {% empty %}
+        <li>暂无热门博客</li>
+        {% endfor %}
+    </ul>
+</div>
+
 <script>
     var options = {
-        chart: { type: 'line'},
-        title: { text: null },
-        xAxis: {
-            categories: {{ days|safe }},
-            tickmarkPlacement: 'on',
+        chart: {
+            type: 'line'
         },
-        yAxis:{
-            title: { text: null },
-            labels: { enabled: false },
+        title: {
+            text: null
+        },
+        xAxis: {
+            categories: {{days | safe}},
+            tickmarkPlacement: 'on',
+            title: {
+                text: '前7天博客阅读量',
+            },
+        },
+        yAxis: {
+            title: {
+                text: null
+            },
+            labels: {
+                enabled: false
+            },
             gridLineDashSytle: 'Dash',
         },
         series: [{
-            name:'阅读量',
-            data: {{ read_nums }}
+            name: '阅读量',
+            data: {{read_nums}}
         }],
-        legend: { enabled:false},
-        credits: {enabled:false},
+        legend: {
+            enabled: false
+        },
+        credits: {
+            enabled: false
+        },
     };
     var char = Highcharts.chart('container', options);
 </script>

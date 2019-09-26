@@ -99,7 +99,6 @@ def blogs_with_date(request, year, month):
 
     context['blogs_with_date'] = blogs_with_date
     context['current_date'] = str(year) + '-' + str(month)
-    # TODO:日期归档不显示数量
     return render(request, 'blog/blog_with_type.html', context=context)
 
 def blog_detail(request, blog_id):

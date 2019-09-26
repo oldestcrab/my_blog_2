@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from .models import ReadNum, ReadNumDetail
 from django.utils import timezone
 from django.db.models import Sum
+from blog.models import Blog
 
 
 def read_statistics_once_read(request, obj):
@@ -31,7 +32,7 @@ def read_statistics_once_read(request, obj):
 
     return key
 
-def get_seven_days_read_date(content_type):
+def get_seven_days_read_data(content_type):
     """获取前七天的相关模型阅读数量
 
     :param content_type: content_type
@@ -52,3 +53,30 @@ def get_seven_days_read_date(content_type):
         read_nums.append(result_blog['read_count'] or 0)
 
     return days, read_nums
+
+def get_oneday_hot_blogs(content_type, date):
+    """获取某一天的前7篇博客以及当天浏览量
+
+    :param content_type: content_type
+    :param date: 某一天的日期
+    :return: 某一天的前7篇博客以及当天浏览量
+    """
+    # 获取阅读量排行前7的博客
+    today_hot_blogs = ReadNumDetail.objects.filter(content_type=content_type, date=date).order_by('-read_num')[:7]
+    # print(today_hot_blogs)
+    return today_hot_blogs
+
+def get_range_day_hot_blogs(days:int):
+    """获取前某天范围内的热门博客
+
+    :param days: 前几天范围内的热门阅读，前7天：7，当天：0
+    :return: 前某天范围内的热门博客字典
+    """
+    # 前某天的日期
+    date =  timezone.now().date() - datetime.timedelta(days)
+
+    # 热门博客字典
+    hot_blogs_data = Blog.objects.filter(read_num_details__date__gte=date) \
+                    .values('id', 'title').annotate(read_num_detail=Sum('read_num_details__read_num')).order_by('-read_num_detail')[:7]
+
+    return hot_blogs_data
