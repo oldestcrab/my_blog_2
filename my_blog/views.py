@@ -10,11 +10,12 @@
 # @description： 主页视图
 
 import datetime
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from read_statistics.utils import get_seven_days_read_data, get_range_day_hot_blogs
 from django.contrib.contenttypes.models import ContentType
 from blog.models import Blog
 from django.core.cache import cache
+from django.contrib import auth
 
 
 def home(request):
@@ -49,3 +50,14 @@ def home(request):
         'range_day_hot_blogs_30': range_day_hot_blogs_30,
     }
     return render(request, 'home.html', context=context)
+
+def login(request):
+    username = request.POST.get('user')
+    password = request.POST.get('password')
+
+    user = auth.authenticate(request=request, username=username, password=password)
+    if user:
+        auth.login(request, user)
+        return redirect('/')
+    else:
+        pass

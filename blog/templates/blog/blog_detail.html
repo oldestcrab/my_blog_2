@@ -1,3 +1,11 @@
+<!--
+ * @Description: 博客详细展示页面
+ * @Author: oldestcrab
+ * @Github:
+ * @Date: 2019-09-24 08:50:36
+ * @LastEditors: oldestcrab
+ * @LastEditTime: 2019-09-26 14:07:13
+ -->
 {% extends "base.html" %}
 {% block title %}
 {{ blog.title }}
@@ -42,5 +50,26 @@ active
             </div>
         </div>
     </div>
+
+    <div class="row">
+            <div class="col-xs-10 col-xd-offset-1">
+                <div>
+                {% if user.is_authenticated %}
+                评论
+                {% else %}
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input type="text", name="user">
+                    <input type="password", name="password">
+                    <button type="submit">
+                </form>
+                {% endif %}
+                </div>
+                <div>评论列表
+                </div>
+            </div>
+
+    </div>
+
 </div>
 {% endblock content %}
