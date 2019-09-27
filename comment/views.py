@@ -2,6 +2,7 @@ from django.shortcuts import render, reverse, redirect
 from django.http import JsonResponse
 from .forms import CommentForm
 from .models import Comment
+from django.utils import timezone
 
 def update_comment(request):
     """返回通过ajax提交的评论
@@ -22,15 +23,16 @@ def update_comment(request):
             comment.root = parent.root if parent.root else parent
             comment.parent = parent
             comment.reply_to = parent.user
-
         comment.save()
 
         data = {
             'username':comment.user.username,
-            'comment_time':comment.comment_time.strftime('%Y-%m-%d %H:%M:%S'),
+            # 格式化为当地时间
+            'comment_time':timezone.localtime(comment.comment_time).strftime('%Y-%m-%d %H:%M:%S'),
             'comment_text':comment.text,
             'status':'SUCCESS',
             'pk':comment.pk,
+            'root_pk':comment.root.pk if comment.root else '',
         }
 
         if parent:
