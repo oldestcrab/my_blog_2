@@ -1,10 +1,14 @@
 from django.shortcuts import render, reverse, redirect
+from django.http import JsonResponse
 from .forms import CommentForm
 from .models import Comment
 
 def update_comment(request):
-    # 获取跳转之前的url
-    refer = request.META.get('HTTP_REFERER', reverse('home'))
+    """返回通过ajax提交的评论
+
+    :param request: request
+    :return: json数据
+    """
     comment_form = CommentForm(request.POST, user=request.user)
     # 数据没问题则保存
     if comment_form.is_valid():
@@ -14,6 +18,20 @@ def update_comment(request):
         comment.user = request.user
         comment.save()
 
-    return redirect(refer)
+        data = {
+            'username':comment.user.username,
+            'comment_time':comment.comment_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'comment_text':comment.text,
+            'status':'SUCCESS',
+        }
+
+    else:
+        data = {
+            'status': 'ERROR',
+            'message': list(comment_form.errors.values())[0][0]
+        }
+
+    return JsonResponse(data)
+
 
 

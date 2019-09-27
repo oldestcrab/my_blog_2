@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from read_statistics.utils import read_statistics_once_read
 from comment.forms import CommentForm
+from comment.models import Comment
 
 def get_blog_list_common_date(request, object_list):
     """返回博客的一些通用信息
@@ -122,12 +123,17 @@ def blog_detail(request, blog_id):
     # 下一条博客
     next_blog = Blog.objects.filter(created_time__gt=blog.created_time).last()
 
+    content_type = ContentType.objects.get_for_model(blog)
+    # 获取评论列表
+    comments = Comment.objects.filter(content_type=content_type, object_id=blog.pk).order_by('-comment_time')
+
     context = {
         'blog': blog,
         'previous_blog': previous_blog,
         'next_blog': next_blog,
+        'comments': comments,
         # 评论表单实例化
-        'comment_form': CommentForm(initial={'object_id':blog.pk, 'content_type': ContentType.objects.get_for_model(blog).model})
+        'comment_form': CommentForm(initial={'object_id':blog.pk, 'content_type': content_type.model})
     }
 
     response = render(request, 'blog/blog_detail.html', context=context)
