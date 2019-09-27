@@ -4,7 +4,7 @@
  * @Github:
  * @Date: 2019-09-24 08:50:36
  * @LastEditors: oldestcrab
- * @LastEditTime: 2019-09-27 13:37:09
+ * @LastEditTime: 2019-09-27 16:55:38
  -->
 {% extends "base.html" %}
 {% block title %}
@@ -62,6 +62,10 @@ active
                     style="overflow: hidden">
                     {% csrf_token %}
                     <label for="comment_text">{{ user.username }},欢迎评论</label>
+                    <div id="reply_content_container" style="display: none">
+                        <p>回复:</p>
+                        <div id="reply_content"></div>
+                    </div>
                     {{ comment_form }}
                     <span id="comment_error" class="text-danger pull-left"></span>
                     <input type="submit" value="评论" class="btn btn-primary pull-right">
@@ -76,10 +80,22 @@ active
                 <h3 class="comment-area-title">评论列表</h3>
                 <div id="comment_list">
                     {% for comment in comments %}
-                    <div>
-                        {{ comment.user.username }}
-                        {{ comment.comment_time|date:'Y-m-d H:i:s' }}
-                        {{ comment.text|safe }}
+                    <div class="comment">
+                        <span>{{ comment.user.username }}</span>
+                        (<span>{{ comment.comment_time|date:'Y-m-d H:i:s' }})</span>
+                        <div id="comment_{{ comment.pk }}">{{ comment.text|safe }}</div>
+                        <a href="javascript:reply({{comment.pk}});">回复</a>
+                        {% for reply in comment.root_comment.all %}
+                        <div class="reply">
+                            <span>{{ reply.user.username }}</span>
+                            <span>({{ reply.comment_time|date:'Y-m-d H:i:s' }})</span>
+                            <span>回复</span>
+                            {{ reply.reply_to.username }}:
+                            <div class="comment_{{ reply.pk }}">{{ reply.text|safe }}</div>
+                            <a href="javascript:reply({{reply.pk}});">回复</a>
+
+                        </div>
+                        {% endfor %}
                     </div>
 
                     {% empty %}
@@ -119,6 +135,11 @@ active
                 if (data['status'] == 'SUCCESS') {
                     $('#comment_list').prepend('<div>' + data['username'] + ' (' + data[
                         'comment_time'] + ') ' + data['comment_text'] + '</div>');
+                    if($('#reply_comment_id').val()=='0'){
+                        // 插入评论
+                    }else{
+                        // 插入回复
+                    }
                     // 清空评论框
                     CKEDITOR.instances['id_text'].setData('')
                 } else {
@@ -133,5 +154,19 @@ active
         return false;
 
     })
+
+    function reply(reply_comment_id) {
+        // 设置值
+        $('#reply_comment_id').val(reply_comment_id);
+        var html = $('#comment_' + reply_comment_id).html();
+        $('#reply_content').html(html);
+        $('#reply_content_container').show();
+
+        $('html').animate({
+            scrollTop: $('#comment_form').offset().top - 60
+        }, 300, function () {
+            CKEDITOR.instances['id_text'].focus();
+        });
+    }
 </script>
 {% endblock script_extends %}

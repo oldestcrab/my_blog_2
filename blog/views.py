@@ -125,7 +125,7 @@ def blog_detail(request, blog_id):
 
     content_type = ContentType.objects.get_for_model(blog)
     # 获取评论列表
-    comments = Comment.objects.filter(content_type=content_type, object_id=blog.pk).order_by('-comment_time')
+    comments = Comment.objects.filter(content_type=content_type, object_id=blog.pk, parent=None)
 
     context = {
         'blog': blog,
@@ -133,7 +133,7 @@ def blog_detail(request, blog_id):
         'next_blog': next_blog,
         'comments': comments,
         # 评论表单实例化
-        'comment_form': CommentForm(initial={'object_id':blog.pk, 'content_type': content_type.model})
+        'comment_form': CommentForm(initial={'object_id':blog.pk, 'content_type': content_type.model, 'reply_comment_id':0})
     }
 
     response = render(request, 'blog/blog_detail.html', context=context)

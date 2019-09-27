@@ -16,6 +16,13 @@ def update_comment(request):
         comment.content_object = comment_form.cleaned_data['content_object']
         comment.text = comment_form.cleaned_data['text']
         comment.user = request.user
+
+        parent = comment_form.cleaned_data['parent']
+        if parent:
+            comment.root = parent.root if parent.root else parent
+            comment.parent = parent
+            comment.reply_to = parent.user
+
         comment.save()
 
         data = {
@@ -23,8 +30,13 @@ def update_comment(request):
             'comment_time':comment.comment_time.strftime('%Y-%m-%d %H:%M:%S'),
             'comment_text':comment.text,
             'status':'SUCCESS',
+            'pk':comment.pk,
         }
 
+        if parent:
+            data['reply_to'] = comment.reply_to.username
+        else:
+            data['reply_to'] = ''
     else:
         data = {
             'status': 'ERROR',
