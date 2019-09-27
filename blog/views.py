@@ -4,8 +4,10 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models import Count
-from read_statistics.utils import read_statistics_once_read
+from django.contrib.contenttypes.models import ContentType
 
+from read_statistics.utils import read_statistics_once_read
+from comment.forms import CommentForm
 
 def get_blog_list_common_date(request, object_list):
     """返回博客的一些通用信息
@@ -124,6 +126,8 @@ def blog_detail(request, blog_id):
         'blog': blog,
         'previous_blog': previous_blog,
         'next_blog': next_blog,
+        # 评论表单实例化
+        'comment_form': CommentForm(initial={'object_id':blog.pk, 'content_type': ContentType.objects.get_for_model(blog).model})
     }
 
     response = render(request, 'blog/blog_detail.html', context=context)

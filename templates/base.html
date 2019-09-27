@@ -1,3 +1,11 @@
+<!--
+ * @Description: 网站模板
+ * @Author: oldestcrab
+ * @Github:
+ * @Date: 2019-09-24 09:59:50
+ * @LastEditors: oldestcrab
+ * @LastEditTime: 2019-09-27 10:35:46
+ -->
 {% load staticfiles %}
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -50,10 +58,8 @@
 
         </div>
     </div>
-    {% block content %}
-
-    {% endblock content %}
-
+    {% block content %}{% endblock content %}
+    {% block script_extends %}{% endblock script_extends %}
     <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
     <script src="{% static 'jquery-1.12.4.min.js' %}"></script>
     <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->

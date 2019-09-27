@@ -4,7 +4,7 @@
  * @Github:
  * @Date: 2019-09-24 08:50:36
  * @LastEditors: oldestcrab
- * @LastEditTime: 2019-09-26 14:07:13
+ * @LastEditTime: 2019-09-27 11:06:40
  -->
 {% extends "base.html" %}
 {% block title %}
@@ -13,6 +13,8 @@
 {% load staticfiles %}
 {% block header_extends %}
 <link rel="stylesheet" href="{% static 'blog.css' %}">
+<script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+<script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
 {% endblock header_extends %}
 {% block nav_blog_active %}
 active
@@ -26,7 +28,7 @@ active
             <ul class="blog-info-description">
                 <li>作者：{{ blog.author}}</li>
                 <li>分类：<a href="{% url 'blog:blogs_with_type' blog.blog_type.id %}">{{ blog.blog_type }}</a></li>
-                <li>发表日期：{{ blog.created_time|date:'Y-m-d H:n:s'}}</li>
+                <li>发表日期：{{ blog.created_time|date:'Y-m-d H:i:s'}}</li>
                 <li>阅读量：{{ blog.get_read_num}}</li>
             </ul>
             <div class="blog-content">{{ blog.content|safe }}</div>
@@ -56,15 +58,10 @@ active
             <div class="comment-area">
                 <h3 class="comment-area-title">提交评论</h3>
                 {% if user.is_authenticated %}
-                <form action="" method="POST" style="overflow: hidden">
+                <form id="comment_form" action="{% url 'comment:update_comment' %}" method="POST" style="overflow: hidden">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label for="comment_text">{{ user.username }},欢迎评论</label>
-                        <textarea id="comment_text" class="form-control" name="text" rows="4"></textarea>
-                    </div>
-
-                    <input type="hidden" name="object_id" value="{{ blog.pk }}">
-                    <input type="hidden" name="content_type" value="blog">
+                    <label for="comment_text">{{ user.username }},欢迎评论</label>
+                    {{ comment_form }}
                     <input type="submit" value="评论" class="btn btn-primary" style="float:right">
                 </form>
                 {% else %}
@@ -78,13 +75,13 @@ active
                 {% for comment in comments %}
                 <div>
                     {{ comment.user.username }}
-                    {{ comment.comment_time|date:'Y-m-d H:n:s' }}
+                    {{ comment.comment_time|date:'Y-m-d H:i:s' }}
                     {{ comment.text }}
                 </div>
 
 
                 {% empty %}
-                暂无评论
+                <span id="no_comment">暂无评论</span>
                 <a href=""></a>
                 {% endfor %}
             </div>
@@ -94,3 +91,7 @@ active
 
 </div>
 {% endblock content %}
+
+{% block script_extends %}
+<script type="text/javascript"></script>
+{% endblock script_extends %}
