@@ -15,9 +15,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
-    <title>{% block title %}
-
-        {% endblock title %}|OlesetCrab Blog</title>
+    <title>{% block title %}{% endblock title %}| OlesetCrab Blog</title>
 
     <!-- Bootstrap -->
     <link href="{% static 'base.css' %}" rel="stylesheet">
@@ -46,6 +44,7 @@
                 <span class="icon-bar"></span>
             </div>
             <div id="navbar-collapse" class="collapse navbar-collapse">
+                <!-- 导航栏左边 -->
                 <ul class="nav navbar-nav">
                     <li class="{% block nav_home_active %}{% endblock %}">
                         <a href="{% url 'home' %}">首页</a>
@@ -53,6 +52,27 @@
                     <li class="{% block nav_blog_active %}{% endblock %}">
                         <a href="{% url 'blog:blog_list' %}">博客</a>
                     </li>
+                </ul>
+                <!-- 导航栏右边 -->
+                <ul class="nav navbar-nav navbar-right">
+                    {% if not user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'accounts:login' %}?from={{ request.get_full_path }}">登录</a
+                        </li>
+                    <li>
+                        <a href="{% url 'accounts:register' %}?from={{ request.get_full_path }}">注册</a>
+                    </li>
+                    {% else %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                            aria-expanded="false"> {{user.username }} <span class="caret"></span></<a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'accounts:user_info' %}">个人中心</a></li>
+                            <li><a href="{% url 'accounts:logout' %}?from={{ request.get_full_path }}">退出</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
                 </ul>
             </div>
 

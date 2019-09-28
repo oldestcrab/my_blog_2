@@ -10,3 +10,8 @@ body {
 ul {
     list-style-type: none!important;
 }
+
+/* 导航栏右侧 */
+ul.navbar-right {
+    margin-right: 0;
+}

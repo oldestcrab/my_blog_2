@@ -9,19 +9,19 @@
 # @time: 2019/9/24 15:23
 # @description： 主页视图
 
-import datetime
-from django.shortcuts import render, redirect, reverse
-from django.http import JsonResponse
-from read_statistics.utils import get_seven_days_read_data, get_range_day_hot_blogs
+from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
-from blog.models import Blog
 from django.core.cache import cache
-from .forms import LoginForm, RegisterForm
-from django.contrib.auth.models import User
-from django.contrib import auth
+
+from read_statistics.utils import get_seven_days_read_data, get_range_day_hot_blogs
+from blog.models import Blog
 
 def home(request):
+    """首页视图
 
+    :param request:
+    :return:
+    """
     content_type = ContentType.objects.get_for_model(Blog)
     # 前七天的日期，以及博客阅读数量列表
     days, read_nums = get_seven_days_read_data(content_type)
@@ -52,67 +52,3 @@ def home(request):
         'range_day_hot_blogs_30': range_day_hot_blogs_30,
     }
     return render(request, 'home.html', context=context)
-
-def login(request):
-    """用户登录
-
-    :param request: request
-    :return:
-    """
-    # 如果提交方式为post,传输数据给登录表单，否则返回空表单
-    if request.method == 'POST':
-        login_form = LoginForm(request.POST)
-        # 判断数据是否有效，有则登录，跳转到之前的页面或者首页
-        if login_form.is_valid():
-            user = login_form.cleaned_data['user']
-            auth.login(request, user)
-            return redirect(request.GET.get('from', reverse('home')))
-
-    else:
-        login_form = LoginForm()
-
-    context = {
-        'login_form': login_form,
-    }
-    return render(request, 'login.html', context=context)
-
-def login_for_modal(request):
-    login_form = LoginForm(request.POST)
-    if login_form.is_valid():
-        user = login_form.cleaned_data['user']
-        auth.login(request, user)
-
-        data = {
-            'status': 'SUCCESS',
-        }
-    else:
-        data = {
-            'status': 'ERROR',
-        }
-
-    return JsonResponse(data)
-
-def register(request):
-    """用户注册
-
-    :param request: request
-    :return:
-    """
-    if request.method == 'POST':
-        reg_form = RegisterForm(request.POST)
-        # 判断数据是否有效，有则创建用户
-        if reg_form.is_valid():
-            username = reg_form.cleaned_data['username']
-            password = reg_form.cleaned_data['password']
-            email = reg_form.cleaned_data['email']
-            user = User.objects.create_user(username, email, password)
-            user.save()
-            return redirect('login')
-
-    else:
-        reg_form = RegisterForm()
-
-    context = {
-        'reg_form': reg_form,
-    }
-    return render(request, 'register.html', context=context)
