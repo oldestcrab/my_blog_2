@@ -129,33 +129,6 @@ active
 
             </div>
         </div>
-
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="login_modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <form id="login_modal_form" action="" method="POST">
-
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">登录</h4>
-                    </div>
-                    <div class="modal-body">
-                        {% csrf_token %}
-                        {{ login_form }}
-                        <span class="text-danger" id="login_modal_tip"></span>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">登录</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
     </div>
 </div>
 {% endblock content %}
@@ -296,21 +269,5 @@ active
         });
     }
 
-    $('#login_modal_form').submit(function(){
-        $.ajax({
-            url:"{% url 'accounts:login_for_modal' %}",
-            type:'POST',
-            data:$(this).serialize(),
-            cache:false,
-            success: function(data){
-                if(data['status'] == 'SUCCESS'){
-                    window.location.reload();
-                }else{
-                    $('#login_modal_tip').text('用户名或密码错误')
-                }
-            },
-        });
-        return false;
-    });
 </script>
 {% endblock script_extends %}

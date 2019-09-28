@@ -57,19 +57,17 @@
                 <ul class="nav navbar-nav navbar-right">
                     {% if not user.is_authenticated %}
                     <li>
-                        <a href="{% url 'accounts:login' %}?from={{ request.get_full_path }}">登录</a
-                        </li>
-                    <li>
+                        <a href="{% url 'accounts:login' %}?from={{ request.get_full_path }}">登录</a </li> <li>
                         <a href="{% url 'accounts:register' %}?from={{ request.get_full_path }}">注册</a>
                     </li>
                     {% else %}
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
-                            aria-expanded="false"> {{user.username }} <span class="caret"></span></<a>
-                        <ul class="dropdown-menu">
-                            <li><a href="{% url 'accounts:user_info' %}">个人中心</a></li>
-                            <li><a href="{% url 'accounts:logout' %}?from={{ request.get_full_path }}">退出</a></li>
-                        </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            {{user.username }} <span class="caret"></span></<a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'accounts:user_info' %}">个人中心</a></li>
+                                <li><a href="{% url 'accounts:logout' %}?from={{ request.get_full_path }}">退出</a></li>
+                            </ul>
                     </li>
                     {% endif %}
 
@@ -80,8 +78,52 @@
     </div>
     {% block content %}{% endblock content %}
 
+    <!-- Modal 登录弹框-->
+    <div class="modal fade" id="login_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <form id="login_modal_form" action="" method="POST">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">登录</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        {{ login_modal_form }}
+                        <span class="text-danger" id="login_modal_tip"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">登录</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
     <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
     <script src="{% static 'jquery-1.12.4.min.js' %}"></script>
+    <!-- 登录弹框相关js -->
+    <script type="text/javascript">
+        $('#login_modal_form').submit(function () {
+            $.ajax({
+                url: "{% url 'accounts:login_for_modal' %}",
+                type: 'POST',
+                data: $(this).serialize(),
+                cache: false,
+                success: function (data) {
+                    if (data['status'] == 'SUCCESS') {
+                        window.location.reload();
+                    } else {
+                        $('#login_modal_tip').text('用户名或密码错误')
+                    }
+                },
+            });
+            return false;
+        });
+    </script>
     <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
     <script src="{% static 'bootstrap-3.3.7/js/bootstrap.min.js' %}"></script>
     {% block script_extends %}{% endblock script_extends %}
