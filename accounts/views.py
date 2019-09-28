@@ -33,7 +33,7 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.save()
             # 注册成功，跳转到登录页面
-            return redirect('login')
+            return redirect('accounts:login')
     else:
         # 实例化注册表单
         reg_form = RegisterForm()
