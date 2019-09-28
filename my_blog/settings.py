@@ -73,6 +73,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # 自定义全局模板变量
+                'accounts.context_processors.login_modal_form',
+
             ],
         'libraries': {
             'comment_tags': 'comment.templatetags.comment_tags',
