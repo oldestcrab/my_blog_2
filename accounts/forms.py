@@ -64,3 +64,37 @@ class RegisterForm(forms.Form):
         if password != password_again:
             raise ValidationError('两次密码不一致')
         return password_again
+
+class ChangeNicknameForm(forms.Form):
+    nickname_new = forms.CharField(label='新的昵称', max_length=20, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'请输入新的昵称'}))
+
+    def __init__(self, *args, **kwargs):
+        """获取当前用户
+
+        :param args:
+        :param kwargs:
+        """
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        super(ChangeNicknameForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        """判断用户是否登录
+
+        :return:
+        """
+        if self.user.is_authenticated:
+            self.cleaned_data['user'] = self.user
+        else:
+            raise ValidationError('用户尚未登录')
+        return self.cleaned_data
+
+    def clean_nickname_new(self):
+        """判断用户输入的新昵称是否为空
+
+        :return:
+        """
+        nickname_new = self.cleaned_data.get('nickname_new', '').strip()
+        if not nickname_new:
+            raise ValidationError('新的昵称不能为空')
+        return nickname_new

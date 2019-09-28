@@ -14,7 +14,8 @@ from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
 
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ChangeNicknameForm
+from .models import Profile
 
 def register(request):
     """用户注册视图
@@ -112,3 +113,25 @@ def user_info(request):
     }
 
     return render(request, 'accounts/user_info.html', context=context)
+
+def change_nickname(request):
+
+    if request.method == 'POST':
+        form = ChangeNicknameForm(request.POST, user=request.user)
+        if form.is_valid():
+            nickname_new = form.cleaned_data['nickname_new']
+            profile,created = Profile.objects.get_or_create(user=request.user)
+            profile.nickname = nickname_new
+            profile.save()
+
+            return redirect(request.GET.get('from', reverse('home')))
+    else:
+        context = {
+            'page_title': '修改昵称',
+            'form_title': '修改昵称',
+            'submit_text': '修改',
+            'return_back_url': request.GET.get('from', reverse('home')),
+            'form': ChangeNicknameForm(),
+        }
+
+        return render(request, 'form.html', context=context)

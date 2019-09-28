@@ -27,7 +27,7 @@ def update_comment(request):
         comment.save()
 
         data = {
-            'username':comment.user.username,
+            'username':comment.user.get_nickname_or_username(),
             # 格式化为当地时间
             'comment_time':timezone.localtime(comment.comment_time).strftime('%Y-%m-%d %H:%M:%S'),
             'comment_text':comment.text,
@@ -38,7 +38,7 @@ def update_comment(request):
         }
 
         if parent:
-            data['reply_to'] = comment.reply_to.username
+            data['reply_to'] = comment.reply_to.get_nickname_or_username()
         else:
             data['reply_to'] = ''
     else:

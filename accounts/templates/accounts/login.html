@@ -7,7 +7,6 @@
 <div class="container">
     <div class="row">
         <div class="col-xs-4 col-xs-offset-4">
-            {# 如果已登录，跳转到首页 #}
             {% if not user.is_authenticated %}
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -21,6 +20,7 @@
                     </form>
                 </div>
             </div>
+            {# 如果已登录，跳转到首页 #}
             {% else %}
             <span>已登录，跳转到首页</span>
             <script type="text/javascript">
