@@ -26,7 +26,9 @@ urlpatterns = [
     path('ckeditor', include('ckeditor_uploader.urls')),
     path('blog/', include(('blog.urls', 'blog'))),
     path('comment/', include(('comment.urls', 'comment'))),
+    path('likes/', include(('likes.urls', 'likes'))),
     path('login', views.login, name='login'),
+    path('login_for_modal', views.login_for_modal, name='login_for_modal'),
     path('register', views.register, name='register'),
 
 ]

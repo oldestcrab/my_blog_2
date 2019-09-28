@@ -12,6 +12,7 @@
 {% endblock title %}
 {% load staticfiles %}
 {% load comment_tags %}
+{% load likes_tags %}
 {% block header_extends %}
 <link rel="stylesheet" href="{% static 'blog.css' %}">
 <script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
@@ -34,6 +35,11 @@ active
                 <li>评论数：{% get_comment_count blog %}</li>
             </ul>
             <div class="blog-content">{{ blog.content|safe }}</div>
+            <div class="like" onclick="like_change(this, '{% get_content_type blog %}', {{ blog.pk }})">
+                <span class="glyphicon glyphicon-thumbs-up {% get_like_status blog %}"></span>
+                <span class="liked-num">{% get_like_count blog %}</span>
+                <span>喜欢</span>
+            </div>
             <div class="blog-more">
                 <P>上一篇：
                     {# 上一篇 #}
@@ -87,6 +93,14 @@ active
                         <span>{{ comment.user.username }}</span>
                         (<span>{{ comment.comment_time|date:'Y-m-d H:i:s' }})</span>
                         <div id="comment_{{ comment.pk }}">{{ comment.text|safe }}</div>
+
+                        <div class="like"
+                            onclick="like_change(this, '{% get_content_type comment %}', {{ comment.pk }})">
+                            <span class="glyphicon glyphicon-thumbs-up {% get_like_status comment %}"></span>&nbsp;
+                            <span class="liked-num">{% get_like_count comment %}</span>&nbsp;&nbsp;
+
+                        </div>
+
                         <a href="javascript:reply({{comment.pk}});">回复</a>
                         {% for reply in comment.root_comment.all %}
                         <div class="reply">
@@ -95,6 +109,12 @@ active
                             <span>回复</span>
                             <span>{{ reply.reply_to.username }}:</span>
                             <div id="comment_{{ reply.pk }}">{{ reply.text|safe }}</div>
+                            <div class="like"
+                                onclick="like_change(this, '{% get_content_type reply %}', {{ reply.pk }})">
+                                <span class="glyphicon glyphicon-thumbs-up {% get_like_status reply %}"></span>&nbsp;
+                                <span class="liked-num">{% get_like_count reply %}</span>&nbsp;&nbsp;
+
+                            </div>
                             <a href="javascript:reply({{reply.pk}});">回复</a>
 
                         </div>
@@ -112,11 +132,44 @@ active
 
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="login_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <form id="login_modal_form" action="" method="POST">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">登录</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        {{ login_form }}
+                        <span class="text-danger" id="login_modal_tip"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">登录</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
 
 {% block script_extends %}
 <script type="text/javascript">
+    String.prototype.format = function () {
+        var str = this;
+        for (var i = 0; i < arguments.length; i++) {
+            var str = str.replace(new RegExp('\\{' + i + '\\}', 'g'), arguments[i])
+        };
+        return str;
+    }
+
     function reply(reply_comment_id) {
         // 设置值
         $('#reply_comment_id').val(reply_comment_id);
@@ -151,21 +204,37 @@ active
                 if (data['status'] == 'SUCCESS') {
                     if ($('#reply_comment_id').val() == 0) {
                         // 插入评论
-                        var comment_html = '<div id="root_' + data['pk'] +
-                            '" class="comment"><span>' + data['username'] + '</span>(<span>' + data[
-                                'comment_time'] + ')</span><div id="comment_' + data['pk'] + '">' +
-                            data['comment_text'] + '</div><a href="javascript:reply(' + data['pk'] +
-                            ');">回复</a></div>';
+
+                        var comment_html = '<div id="root_{0}" class="comment">' +
+                            '<span>{1}</span>' +
+                            '(<span>{2})</span>' +
+                            '<div id="comment_{0}">{3}</div>' +
+                            '<div class="like" onclick="like_change(this, \'{4}\', {0})">' +
+                            '<span class="glyphicon glyphicon-thumbs-up" ></span>&nbsp;' +
+                            '<span class="liked-num">0</span>&nbsp;&nbsp;' +
+                            '</div>' +
+                            '<a href="javascript:reply({0});">回复</a>' +
+                            '</div>';
+                        var comment_html = comment_html.format(data['pk'], data['username'], data[
+                            'comment_time'], data['comment_text'], data['content_type'], )
+
                         $('#comment_list').prepend(comment_html);
                     } else {
                         // 插入回复
 
-                        var reply_html = '<div class="reply"><span>' + data['username'] +
-                            '</span> <span>(' + data['comment_time'] +
-                            ')</span><span>回复</span><span>' + data['reply_to'] +
-                            ':</span><div id="comment_' + data['pk'] + '">' + data[
-                                'comment_text'] + '</div><a href="javascript:reply(' + data['pk'] +
-                            ');">回复</a></div>';
+                        var reply_html = '<div  class="reply">' +
+                            '<span>{1}</span>' +
+                            '(<span>{2})</span>' +
+                            '<div id="comment_{0}">{3}</div>' +
+                            '<div class="like" onclick="like_change(this, \'{4}\', {0})">' +
+                            '<span class="glyphicon glyphicon-thumbs-up" ></span>&nbsp;' +
+                            '<span class="liked-num">0</span>&nbsp;&nbsp;' +
+                            '</div>' +
+                            '<a href="javascript:reply({0});">回复</a>' +
+                            '</div>';
+                        var reply_html = reply_html.format(data['pk'], data['username'], data[
+                            'comment_time'], data['comment_text'], data['content_type'], )
+
                         $("#root_" + data['root_pk']).append(reply_html)
                     };
                     // 清空评论框
@@ -190,5 +259,58 @@ active
 
     })
 
+    function like_change(obj, content_type, object_id) {
+        var is_like = obj.getElementsByClassName('active').length == 0
+        $.ajax({
+            url: "{% url 'likes:like_change' %}",
+            type: 'GET',
+            data: {
+                content_type: content_type,
+                object_id: object_id,
+                is_like: is_like,
+            },
+            cache: false,
+            success: function (data) {
+                console.log(data)
+                if (data['status'] == 'SUCCESS') {
+                    // 更新点赞状态
+                    var element = $(obj.getElementsByClassName('glyphicon'));
+                    if (is_like) {
+                        element.addClass('active');
+                    } else {
+                        element.removeClass('active');
+                    }
+                    var liked_num = $(obj.getElementsByClassName('liked-num'));
+                    liked_num.text(data['liked_num'])
+                } else {
+                    if (data['code'] == 400) {
+                        $('#login_modal').modal('show');
+                    } else {
+                        alert(data['meassage'])
+                    };
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr)
+            },
+        });
+    }
+
+    $('#login_modal_form').submit(function(){
+        $.ajax({
+            url:"{% url 'login_for_modal' %}",
+            type:'POST',
+            data:$(this).serialize(),
+            cache:false,
+            success: function(data){
+                if(data['status'] == 'SUCCESS'){
+                    window.location.reload();
+                }else{
+                    $('#login_modal_tip').text('用户名或密码错误')
+                }
+            },
+        });
+        return false;
+    });
 </script>
 {% endblock script_extends %}

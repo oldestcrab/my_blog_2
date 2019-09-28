@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import Count
 
 from read_statistics.utils import read_statistics_once_read
+from my_blog.forms import LoginForm
 
 
 def get_blog_list_common_date(request, object_list):
@@ -125,6 +126,8 @@ def blog_detail(request, blog_id):
         'blog': blog,
         'previous_blog': previous_blog,
         'next_blog': next_blog,
+        # 登录表单实例化
+        'login_form': LoginForm(),
     }
 
     response = render(request, 'blog/blog_detail.html', context=context)

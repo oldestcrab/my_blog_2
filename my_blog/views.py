@@ -11,6 +11,7 @@
 
 import datetime
 from django.shortcuts import render, redirect, reverse
+from django.http import JsonResponse
 from read_statistics.utils import get_seven_days_read_data, get_range_day_hot_blogs
 from django.contrib.contenttypes.models import ContentType
 from blog.models import Blog
@@ -74,6 +75,22 @@ def login(request):
         'login_form': login_form,
     }
     return render(request, 'login.html', context=context)
+
+def login_for_modal(request):
+    login_form = LoginForm(request.POST)
+    if login_form.is_valid():
+        user = login_form.cleaned_data['user']
+        auth.login(request, user)
+
+        data = {
+            'status': 'SUCCESS',
+        }
+    else:
+        data = {
+            'status': 'ERROR',
+        }
+
+    return JsonResponse(data)
 
 def register(request):
     """用户注册

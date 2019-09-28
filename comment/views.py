@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from .forms import CommentForm
 from .models import Comment
 from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
 
 def update_comment(request):
     """返回通过ajax提交的评论
@@ -30,6 +31,7 @@ def update_comment(request):
             # 格式化为当地时间
             'comment_time':timezone.localtime(comment.comment_time).strftime('%Y-%m-%d %H:%M:%S'),
             'comment_text':comment.text,
+            'content_type': ContentType.objects.get_for_model(comment).model,
             'status':'SUCCESS',
             'pk':comment.pk,
             'root_pk':comment.root.pk if comment.root else '',
