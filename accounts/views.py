@@ -115,17 +115,25 @@ def user_info(request):
     return render(request, 'accounts/user_info.html', context=context)
 
 def change_nickname(request):
+    """修改昵称视图
 
+    :param request:
+    :return:
+    """
     if request.method == 'POST':
+        # 传递数据给昵称修改表单
         form = ChangeNicknameForm(request.POST, user=request.user)
+        # 数据验证
         if form.is_valid():
             nickname_new = form.cleaned_data['nickname_new']
             profile,created = Profile.objects.get_or_create(user=request.user)
+            # 修改保存
             profile.nickname = nickname_new
             profile.save()
-
+            # 跳转回之前的页面
             return redirect(request.GET.get('from', reverse('home')))
     else:
+        # 实例化昵称表单
         context = {
             'page_title': '修改昵称',
             'form_title': '修改昵称',
@@ -133,5 +141,4 @@ def change_nickname(request):
             'return_back_url': request.GET.get('from', reverse('home')),
             'form': ChangeNicknameForm(),
         }
-
         return render(request, 'form.html', context=context)
