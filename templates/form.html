@@ -13,14 +13,13 @@
                 <div class="panel-body">
                     <form action="" method="POST">
                         {% csrf_token %}
-                        {% for field in form %}
-                        {% if not field.is_hidden %}
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% endif %}
-                        {{ field }}
-                        <p class="text-danger">{{ field.errors.as_text }}</p>
-                        {% endfor %}
-                        <span class="pull-left text-danger">{{ form.non_field_errors }}</span>
+                        {{ form }}
+                        <span id="tip" class="text-danger">{{ form.non_field_errors }}</span>
+                        <div class="clear-fix"></div>
+                        <div class="pull-left">
+                            {% block other_button %}
+                            {% endblock other_button %}
+                        </div>
                         <div class="pull-right">
                             <button class="btn btn-deafult"
                             onclick="window.location.href='{{ return_back_url }}'">返回</button>

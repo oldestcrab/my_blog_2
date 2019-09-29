@@ -9,12 +9,17 @@
 # @time: 2019/9/24 15:23
 # @description： 主页视图
 
+import random
+import string
+import time
+
 from django.shortcuts import render, redirect, reverse
 from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 
-from .forms import LoginForm, RegisterForm, ChangeNicknameForm
+from .forms import LoginForm, RegisterForm, ChangeNicknameForm, BindEmailForm
 from .models import Profile
 
 def register(request):
@@ -142,3 +147,61 @@ def change_nickname(request):
             'form': ChangeNicknameForm(),
         }
         return render(request, 'form.html', context=context)
+
+def bind_email(request):
+    """修改昵称视图
+
+    :param request:
+    :return:
+    """
+    if request.method == 'POST':
+        # 传递数据给昵称修改表单
+        form = BindEmailForm(request.POST, request=request)
+        # 数据验证
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            request.user.email = email
+            request.user.save()
+            # 跳转回之前的页面
+            return redirect(request.GET.get('from', reverse('home')))
+
+    else:
+        # 实例化昵称表单
+        form = BindEmailForm()
+    context = {
+        'page_title': '绑定邮箱',
+        'form_title': '绑定邮箱',
+        'submit_text': '绑定',
+        'return_back_url': request.GET.get('from', reverse('home')),
+        'form': form,
+    }
+    return render(request, 'accounts/bind_email.html', context=context)
+
+def send_verification_code(request):
+    email = request.get('email', '')
+    data = {}
+    if email:
+        # 生成验证码
+        code = ''.join(random.sample(string.ascii_letters + string.digits, 4))
+        now = int(time.time())
+        send_code_time = request.session.get('send_code_time', 0)
+        if now - send_code_time <30:
+            data['status'] = 'ERROR'
+        else:
+            request.session['bind_email_code'] = code
+            request.session['send_code_time'] = now
+
+            # 发送邮件
+            send_mail(
+                '绑定邮箱',
+                f'验证码:{code}',
+                '18819425701',
+                [email],
+                fail_silently=False,
+            )
+
+            data['status'] = 'SUCCESS'
+
+    else:
+        data['status'] = 'ERROR'
+    return JsonResponse(data)

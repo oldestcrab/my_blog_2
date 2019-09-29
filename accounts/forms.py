@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib import auth
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 class LoginForm(forms.Form):
@@ -21,7 +20,7 @@ class LoginForm(forms.Form):
         if user:
             self.cleaned_data['user'] = user
         else:
-            raise ValidationError('用户名或者密码错误')
+            raise forms.ValidationError('用户名或者密码错误')
 
         return self.cleaned_data
 
@@ -41,7 +40,7 @@ class RegisterForm(forms.Form):
         """
         username = self.cleaned_data['username']
         if User.objects.filter(username=username).exists():
-            raise ValidationError('用户名已存在')
+            raise forms.ValidationError('用户名已存在')
         return username
 
     def clean_email(self):
@@ -51,7 +50,7 @@ class RegisterForm(forms.Form):
         """
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
-            raise ValidationError('邮箱已存在')
+            raise forms.ValidationError('邮箱已存在')
         return email
 
     def clean_password_again(self):
@@ -62,7 +61,7 @@ class RegisterForm(forms.Form):
         password = self.cleaned_data['password']
         password_again = self.cleaned_data['password_again']
         if password != password_again:
-            raise ValidationError('两次密码不一致')
+            raise forms.ValidationError('两次密码不一致')
         return password_again
 
 class ChangeNicknameForm(forms.Form):
@@ -86,7 +85,7 @@ class ChangeNicknameForm(forms.Form):
         if self.user.is_authenticated:
             self.cleaned_data['user'] = self.user
         else:
-            raise ValidationError('用户尚未登录')
+            raise forms.ValidationError('用户尚未登录')
         return self.cleaned_data
 
     def clean_nickname_new(self):
@@ -96,7 +95,7 @@ class ChangeNicknameForm(forms.Form):
         """
         nickname_new = self.cleaned_data.get('nickname_new', '').strip()
         if not nickname_new:
-            raise ValidationError('新的昵称不能为空')
+            raise forms.ValidationError('新的昵称不能为空')
         return nickname_new
 
 class BindEmailForm(forms.Form):
@@ -108,7 +107,43 @@ class BindEmailForm(forms.Form):
     )
     verifications_code = forms.CharField(
         label='验证码',
+        required=False,
         widget=forms.EmailInput(
             attrs={'class':'form-control', 'placeholder':'点击”发送验证码“发送到邮箱'}
         )
     )
+
+    def __init__(self, *args, **kwargs):
+        """获取当前用户
+
+        :param args:
+        :param kwargs:
+        """
+        if 'request' in kwargs:
+            self.request = kwargs.pop('request')
+        super(BindEmailForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        # 判断用户是否登录
+        if self.request.user.is_authenticated:
+            self.cleaned_data['user'] = self.request.user
+        else:
+            raise forms.ValidationError('用户尚未登录')
+
+        # 判断是否已绑定邮箱
+        if self.request.user.email:
+            raise forms.forms.ValidationError('已绑定邮箱')
+
+        # 判断验证码
+        code = self.request.session.get('bind_email_code', '')
+        verification_code = self.cleaned_data.get('verification_code', '')
+        if not( code != '' and code== verification_code):
+            raise forms.ValidationError('验证码不正确')
+
+        return self.cleaned_data
+
+    def clean_verifications_code(self):
+        verifications_code = self.cleaned_data.get('verifications_code', '')
+        if not verifications_code:
+            raise forms.ValidationError('验证码不能为空')
+        return verifications_code

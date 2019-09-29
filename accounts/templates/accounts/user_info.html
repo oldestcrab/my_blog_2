@@ -13,8 +13,8 @@
                 <li>昵称: {{ user.get_nickname }}&nbsp;&nbsp;&nbsp;<a href="{% url 'accounts:change_nickname' %}?from={{ request.get_full_path }}">修改昵称</a></li>
                 {% if user.email %}
                 <li>邮箱: {{ user.email }}</li>
-                {% else %}
-                <li>未绑定邮箱 <a href="">绑定邮箱</a></li>
+                
+                <li>未绑定邮箱 <a href="{% url 'accounts:bind_email' %}?from={{ request.get_full_path }}">绑定邮箱</a></li>
                 {% endif %}
 
                 <li>上次登录时间: {{ user.last_login }}</li>
